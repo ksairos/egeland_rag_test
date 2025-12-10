@@ -53,4 +53,4 @@ jobs:
         DB_NAME: ai_consultant_db
         QDRANT_HOST: localhost  # в простых тестах не трогаем Qdrant
       run: |
-        pytest -v
+        uv run pytest -v
