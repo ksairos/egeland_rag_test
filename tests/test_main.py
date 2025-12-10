@@ -16,4 +16,5 @@ def test_chat_log_model_creation():
         ai_response="Hi there"
     )
     assert log.user_id == "test_user_1"
-    # assert log.request_type == "text"
+    assert log.user_query == "Hello"
+    assert log.ai_response == "Hi there"

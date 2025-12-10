@@ -1,1 +1,2 @@
-def retrieve_document()
+def retrieve_document():
+    pass
