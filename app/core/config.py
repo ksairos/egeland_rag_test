@@ -1,0 +1,30 @@
+import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    API_SECRET_KEY: str = "super-secret-key"
+
+    OPENAI_API_KEY: str
+
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+
+    QDRANT_HOST: str
+    QDRANT_PORT: int
+    QDRANT_API_KEY: str
+
+    VECTOR_STORE_PATH: str = "vector_store"
+    SOURCE_DOCS_PATH: str = "source_docs"
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    @property
+    def DATABASE_URL(self) -> str:
+        """Собираем DSN для асинхронного драйвера asyncpg"""
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+
+settings = Settings()
