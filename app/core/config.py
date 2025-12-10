@@ -1,4 +1,3 @@
-import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +15,9 @@ class Settings(BaseSettings):
     QDRANT_HOST: str
     QDRANT_PORT: int
     QDRANT_API_KEY: str
+
+    LANGSMITH_TRACING: bool
+    LANGSMITH_API_KEY: str
 
     VECTOR_STORE_PATH: str = "vector_store"
     SOURCE_DOCS_PATH: str = "source_docs"

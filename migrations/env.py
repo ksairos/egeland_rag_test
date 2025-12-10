@@ -14,7 +14,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.config import settings
 from app.core.database import Base
-from app.models.chat_log import ChatLog # Импортируем модели
 
 
 config = context.config
