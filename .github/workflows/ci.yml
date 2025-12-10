@@ -30,6 +30,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # UV
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+        cache-dependency-glob: "requirements.txt"
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -37,17 +44,18 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        # --system installs into the environment created by setup-python
+        # rather than creating a new virtual environment.
+        uv sync
 
     - name: Run Tests
       env:
-        OPENAI_API_KEY: "mock-key-for-ci" # фейковый ключ
+        OPENAI_API_KEY: "mock-key-for-ci"  # фейковый ключ
         DB_USER: postgres
         DB_PASSWORD: postgres
         DB_HOST: localhost
         DB_PORT: 5432
         DB_NAME: ai_consultant_db
-        QDRANT_HOST: localhost # в простых тестах не трогаем Qdrant,
+        QDRANT_HOST: localhost  # в простых тестах не трогаем Qdrant
       run: |
         pytest -v
