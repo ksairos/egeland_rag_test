@@ -45,12 +45,13 @@ jobs:
 
     - name: Run Tests
       env:
-        OPENAI_API_KEY: "mock-key-for-ci"  # фейковый ключ
-        DB_USER: postgres
-        DB_PASSWORD: postgres
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: ai_consultant_db
+        OPENAI_API_KEY: "mock-key-for-ci"  # фейковые ключи
+        LANGSMITH_API_KEY: "mock-key-for-ci"
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: ai_consultant_db
         QDRANT_HOST: localhost  # в простых тестах не трогаем Qdrant
       run: |
         uv run pytest -v
