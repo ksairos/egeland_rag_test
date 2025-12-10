@@ -35,18 +35,13 @@ jobs:
       uses: astral-sh/setup-uv@v4
       with:
         enable-cache: true
-        cache-dependency-glob: "requirements.txt"
+        cache-dependency-glob: "uv.lock"
 
     - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
+      run: uv python install 3.12
 
     - name: Install dependencies
-      run: |
-        # --system installs into the environment created by setup-python
-        # rather than creating a new virtual environment.
-        uv sync
+      run: uv sync --all-extras --dev
 
     - name: Run Tests
       env:
