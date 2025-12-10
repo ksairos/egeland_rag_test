@@ -53,5 +53,7 @@ jobs:
         POSTGRES_PORT: 5432
         POSTGRES_DB: ai_consultant_db
         QDRANT_HOST: localhost  # в простых тестах не трогаем Qdrant
+        QDRANT_PORT: 6333
+        QDRANT_COLLECTION_NAME: knowledge_base
       run: |
         uv run pytest -v

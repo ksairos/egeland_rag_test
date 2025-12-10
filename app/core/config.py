@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     QDRANT_HOST: str
     QDRANT_PORT: int
-    QDRANT_API_KEY: str
+    QDRANT_COLLECTION_NAME: str
 
     LANGSMITH_API_KEY: str
     LANGSMITH_TRACING: bool = False
