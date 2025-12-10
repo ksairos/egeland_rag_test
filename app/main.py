@@ -3,4 +3,10 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 
-print(settings.DATABASE_URL)
+app = FastAPI(
+    title="Тестовое"
+)
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}

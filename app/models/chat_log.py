@@ -12,7 +12,7 @@ class ChatLog(Base):
     request_type: Mapped[str] = mapped_column(String(50), default="text") # Тип запроса (text, audio, image)
     user_query: Mapped[str] = mapped_column(Text, nullable=True)
     ai_response: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     def __repr__(self):
         return f"<ChatLog(user={self.user_id}, type={self.request_type})>"
