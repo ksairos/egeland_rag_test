@@ -1,10 +1,7 @@
-import getpass
-import os
-
-from langchain.agents import create_agent
-from langchain.tools import tool, ToolRuntime
-from langchain.chat_models import init_chat_model
+from langchain_openai import ChatOpenAI
 
 
-model = init_chat_model("gpt-4o-mini", temperature=0.7)
+model = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
 
+response = model.invoke("Why do parrots talk?")
+print(response)

@@ -45,7 +45,7 @@ jobs:
 
     - name: Run Tests
       env:
-        OPENAI_API_KEY: "mock-key-for-ci"  # фейковые ключи
+        OPENAI_API_KEY: "mock-key-for-ci"  # фейковые ключи. TODO: Потом можно добавить GitHub Secrets
         LANGSMITH_API_KEY: "mock-key-for-ci"
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
