@@ -1,10 +1,10 @@
 import logging
+from uuid import uuid4
 
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_qdrant import FastEmbedSparse, QdrantVectorStore, RetrievalMode
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from openai import OpenAI
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import VectorParams, Distance, SparseVectorParams, SparseIndexParams, Modifier
 
@@ -19,9 +19,14 @@ SPARSE_VECTOR_NAME = "sparce"
 CHUNK_SIZE = 1024
 CHUNK_OVERLAP = 200
 
-client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
+client = QdrantClient(host=settings.QDRANT_HOST_OFFLINE, port=settings.QDRANT_PORT)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
+
+logger.info("Creating data collection")
+
+if client.collection_exists(settings.QDRANT_COLLECTION_NAME):
+    client.delete_collection(settings.QDRANT_COLLECTION_NAME)
 
 client.create_collection(
     collection_name=settings.QDRANT_COLLECTION_NAME,
@@ -33,6 +38,7 @@ client.create_collection(
     },
 )
 
+logger.info("Creating vector store")
 vector_store = QdrantVectorStore(
     client=client,
     collection_name=settings.QDRANT_COLLECTION_NAME,
@@ -48,7 +54,10 @@ text_splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=CHUNK_OVERLAP,
 )
 
-docs = UnstructuredMarkdownLoader("data/lessons_clean.md").load()
+logger.info("Loading and splitting lesson data")
+docs = UnstructuredMarkdownLoader("./data_pipeline/data/lessons_clean.md").load()
 splits = text_splitter.split_documents(docs)
 
+logger.info("Upserting data points")
+uuids = [str(uuid4()) for _ in range(len(splits))]
 vector_store.add_documents(splits)

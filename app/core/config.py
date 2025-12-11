@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
 
     QDRANT_HOST: str
+    QDRANT_HOST_OFFLINE: str = "localhost"
     QDRANT_PORT: int
     QDRANT_COLLECTION_NAME: str
 

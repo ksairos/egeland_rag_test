@@ -24,6 +24,18 @@ services:
     networks:
       - app-network
 
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    depends_on:
+      - qdrant
+      - postgres
+    env_file:
+      - .env
+
 volumes:
   postgres_data:
   qdrant_data:
