@@ -49,11 +49,11 @@ async def lifespan(app: FastAPI):
 
         rag_agent = create_agent(
             model=model,
-            # tools=[retrieve_docs],
+            tools=[retrieve_docs],
             state_schema=CustomAgentState,
             system_prompt=system_prompt,
             # checkpointer=checkpointer,
-            # middleware=[trim_messages],
+            middleware=[trim_messages],
         )
 
         # image_agent = create_agent(

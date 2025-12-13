@@ -61,7 +61,7 @@ system_prompt = """
 
 @before_model
 def trim_messages(
-    state: AgentState, runtime: Runtime, num_to_keep: int = 0
+    state: AgentState, runtime: Runtime, num_to_keep: int = 10
 ) -> dict[str, Any] | None:
     messages = state["messages"]
 
