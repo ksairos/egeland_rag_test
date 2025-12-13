@@ -6,7 +6,13 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_qdrant import FastEmbedSparse, QdrantVectorStore, RetrievalMode
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import VectorParams, Distance, SparseVectorParams, SparseIndexParams, Modifier
+from qdrant_client.http.models import (
+    VectorParams,
+    Distance,
+    SparseVectorParams,
+    SparseIndexParams,
+    Modifier,
+)
 
 from app.core.config import settings
 
