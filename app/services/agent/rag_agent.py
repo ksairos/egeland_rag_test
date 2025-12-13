@@ -53,6 +53,7 @@ system_prompt = """
     \n
     ВАЖНО:\n
     Если документов нет или они не подходят для ответа на запрос, не старайтесь ответить на запрос пользователя самостоятельно. Скажите, что не знаете\n
+    Если запрос содержит изображение, не используйте retrieve_docs()
     \n
     ФОРМАТИРОВАНИЕ: Всегда используйте Markdown синтаксис (**жирный**, *курсив*, `код`) вместо HTML тегов для форматирования ответов.
     """
@@ -60,11 +61,11 @@ system_prompt = """
 
 @before_model
 def trim_messages(
-    state: AgentState, runtime: Runtime, num_to_keep: int = 10
+    state: AgentState, runtime: Runtime, num_to_keep: int = 0
 ) -> dict[str, Any] | None:
     messages = state["messages"]
 
-    if len(messages) <= 10:
+    if len(messages) <= num_to_keep:
         return None
 
     first_msg = messages[0]

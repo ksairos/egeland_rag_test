@@ -17,8 +17,7 @@ async def transcribe_audio(audio_file: UploadFile) -> str:
     client = openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
     transcript = await client.audio.transcriptions.create(
-        model="whisper-1",
-        file=buffer
+        model="whisper-1", file=buffer
     )
 
     return transcript.text
