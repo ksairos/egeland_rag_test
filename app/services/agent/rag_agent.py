@@ -1,3 +1,4 @@
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langchain.agents import create_agent
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -5,6 +6,7 @@ from langchain_qdrant import QdrantVectorStore, FastEmbedSparse, RetrievalMode
 from qdrant_client import QdrantClient
 
 from app.core.config import settings
+from app.models.schemas import CustomAgentState
 
 client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -55,8 +57,4 @@ system_prompt = (
     """
 )
 
-rag_agent = create_agent(
-    model=model,
-    tools=[retrieve_docs],
-    system_prompt=system_prompt
-)
+
