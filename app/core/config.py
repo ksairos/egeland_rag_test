@@ -6,6 +6,8 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: str
 
+    BOT_TOKEN: str
+
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str

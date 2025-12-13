@@ -8,6 +8,7 @@ dependencies = [
     "aiogram>=3.23.0",
     "alembic>=1.17.2",
     "asyncpg>=0.31.0",
+    "betterlogging>=1.0.0",
     "fastapi[standard]>=0.124.0",
     "fastembed>=0.7.4",
     "greenlet>=3.3.0",

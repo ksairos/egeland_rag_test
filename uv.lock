@@ -256,6 +256,15 @@ wheels = [
 ]
 
 [[package]]
+name = "betterlogging"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/fb/9f400b2faedab8229698356580de53e97cf3569d40a3a826d07773e762eb/betterlogging-1.0.0.tar.gz", hash = "sha256:324fab02af0a1a6ea05869ac8dd5b1bcfa59f6fa882cf75e24dfa99f412f54d3", size = 10154 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/56/9b/db1ed2b226a3dd243a09e449a21797e8c386fbce22f8c559a88b5c40de90/betterlogging-1.0.0-py3-none-any.whl", hash = "sha256:b20f4d39af98faf540e9c3fe3d0a08872b3c5da0d02724e7c33be7358aae2a7b", size = 10887 },
+]
+
+[[package]]
 name = "certifi"
 version = "2025.11.12"
 source = { registry = "https://pypi.org/simple" }
@@ -506,6 +515,7 @@ dependencies = [
     { name = "aiogram" },
     { name = "alembic" },
     { name = "asyncpg" },
+    { name = "betterlogging" },
     { name = "fastapi", extra = ["standard"] },
     { name = "fastembed" },
     { name = "greenlet" },
@@ -533,6 +543,7 @@ requires-dist = [
     { name = "aiogram", specifier = ">=3.23.0" },
     { name = "alembic", specifier = ">=1.17.2" },
     { name = "asyncpg", specifier = ">=0.31.0" },
+    { name = "betterlogging", specifier = ">=1.0.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.124.0" },
     { name = "fastembed", specifier = ">=0.7.4" },
     { name = "greenlet", specifier = ">=3.3.0" },
