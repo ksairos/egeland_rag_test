@@ -1,12 +1,15 @@
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-from langchain.agents import create_agent
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_qdrant import QdrantVectorStore, FastEmbedSparse, RetrievalMode
+from langchain.agents import create_agent, AgentState
+from langchain.agents.middleware import before_model
+from langgraph.graph.message import REMOVE_ALL_MESSAGES
+from langchain_core.messages import RemoveMessage
+from langgraph.runtime import Runtime
 from qdrant_client import QdrantClient
+from typing import Any
 
 from app.core.config import settings
-from app.models.schemas import CustomAgentState
 
 client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -58,3 +61,32 @@ system_prompt = (
 )
 
 
+@before_model
+def trim_messages(state: AgentState, runtime: Runtime, num_to_keep: int = 10) -> dict[str, Any] | None:
+    messages = state["messages"]
+
+    if len(messages) <= 10:
+        return None
+
+    first_msg = messages[0]
+    while num_to_keep < len(messages) and messages[-num_to_keep].type == "tool":
+        num_to_keep += 1
+
+    recent_messages = [first_msg] + messages[-num_to_keep-1:]
+
+    return {
+        "messages": [
+            RemoveMessage(id=REMOVE_ALL_MESSAGES),
+            *recent_messages
+        ]
+    }
+
+
+# 4. Add it to your agent
+# Inside your lifespan/startup logic:
+agent = create_agent(
+    "gpt-5",
+    tools=[get_user_info],
+    checkpointer=checkpointer,
+    middleware=[trim_to_ten],  # <--- Add the middleware here
+)

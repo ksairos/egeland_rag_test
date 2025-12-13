@@ -7,7 +7,7 @@ from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from app.core.config import settings
 from app.models.schemas import CustomAgentState, ChatRequest, ChatResponse
-from app.services.agent.rag_agent import model, retrieve_docs, system_prompt
+from app.services.agent.rag_agent import model, retrieve_docs, system_prompt, trim_messages
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,7 +24,8 @@ async def lifespan(app: FastAPI):
             tools=[retrieve_docs],
             state_schema=CustomAgentState,
             system_prompt=system_prompt,
-            checkpointer=checkpointer
+            checkpointer=checkpointer,
+            middleware=[trim_messages]
         )
 
         app.state.rag_agent = rag_agent
@@ -46,7 +47,7 @@ def get_agent(request: Request):
     return request.app.state.rag_agent
 
 
-@app.post("/test", response_model=ChatResponse)
+@app.post("/chat", response_model=ChatResponse)
 async def test_rag_agent(request: ChatRequest, agent = Depends(get_agent)): #TODO: add Telegram message schema
     logger.info("Testing RAG agent")
     try:
