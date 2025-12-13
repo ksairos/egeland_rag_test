@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.chat_log import ChatLog
+from app.models.schemas import UserRequestType
 
 
 async def log_interaction(
@@ -7,7 +8,7 @@ async def log_interaction(
     user_id: str,
     user_query: str,
     ai_response: str,
-    request_type: str = "text",
+    request_type: UserRequestType = UserRequestType.textual,
 ):
     """
     Записывает диалог в бд

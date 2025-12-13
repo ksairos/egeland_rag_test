@@ -1,8 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
+from typing import Optional
 
-from fastapi import FastAPI, Request, HTTPException, Depends, BackgroundTasks
+from fastapi import FastAPI, Request, HTTPException, Depends, BackgroundTasks, UploadFile
 from langchain.agents import create_agent
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,12 +12,14 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.chat_log import ChatLog
 from app.models.schemas import CustomAgentState, ChatRequest, ChatResponse, UserRequestType
+from app.services.agent.image import encode_image
 from app.services.agent.rag_agent import (
     model,
     retrieve_docs,
     system_prompt,
     trim_messages,
 )
+from app.services.db_service import log_interaction
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,29 +62,63 @@ def get_agent(request: Request):
     return request.app.state.rag_agent
 
 
-async def add_chat_log(
-    db: AsyncSession, user_id: str, request_type: str, user_query: str, ai_response: str
+@app.post("/chat/text", response_model=ChatResponse)
+async def invoke_text_agent(
+    request: ChatRequest,
+    background_tasks: BackgroundTasks,
+    agent = Depends(get_agent),
+    db: AsyncSession = Depends(get_db),
+    image_base64: Optional[str] = None,
 ):
-    new_log = ChatLog(
-        user_id=user_id,
-        request_type=request_type,
-        user_query=user_query,
-        ai_response=ai_response,
-        created_at=datetime.now(),  # Explicitly set time
-    )
+    try:
+        user_content = [{
+            "messages": [{"role": "user", "content": request.question}],
+            "user_id": str(request.user_id),
+        },
+            {
+                "configurable": {"thread_id": str(request.user_id)}
+            }, ]  # Только 1 thread на пользователя
 
-    db.add(new_log)
-    await db.commit()
+        # Добавляем картинку
+        if image_base64:
+            user_content.append({
+                "type": "image",
+                "base64": image_base64,
+                "mime_type": "image/jpeg" # TODO: посмотреть, какой тип файла в телеге
+            })
+
+        model_response = await agent.ainvoke(user_content)
+        messages = model_response.get("messages", [])
+
+        if not messages:
+            raise ValueError("No messages returned from agent")
+
+        response_text = model_response["messages"][-1].content
+
+        # Update chat logs
+        background_tasks.add_task(
+            log_interaction,
+            db,
+            request.user_id,
+            UserRequestType.textual,
+            request.question,
+            response_text
+        )
+
+        return ChatResponse(user_id=request.user_id, response=response_text)
+
+    except Exception as e:
+        logger.error(f"Error processing request: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/chat", response_model=ChatResponse)
-async def invoke_rag_agent(
+@app.post("/chat/audio", response_model=ChatResponse)
+async def invoke_audio_agent(
     request: ChatRequest,
     background_tasks: BackgroundTasks,
     agent=Depends(get_agent),
     db: AsyncSession = Depends(get_db),
 ):
-    logger.info("Testing RAG agent")
     try:
         model_response = await agent.ainvoke(
             {
@@ -101,7 +138,7 @@ async def invoke_rag_agent(
 
         # Update chat logs
         background_tasks.add_task(
-            add_chat_log,
+            log_interaction,
             db,
             request.user_id,
             UserRequestType.textual,
