@@ -8,7 +8,7 @@ async def log_interaction(
     user_id: str,
     user_query: str,
     ai_response: str,
-    request_type: UserRequestType = UserRequestType.textual,
+    request_type: UserRequestType = UserRequestType.text,
 ):
     """
     Записывает диалог в бд

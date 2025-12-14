@@ -1,7 +1,5 @@
 import logging
 from contextlib import asynccontextmanager
-from datetime import datetime
-from typing import Optional
 
 from fastapi import (
     FastAPI,
@@ -14,14 +12,11 @@ from fastapi import (
     Form,
 )
 from langchain.agents import create_agent
-from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.postgres import PostgresSaver
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.models.chat_log import ChatLog
 from app.models.schemas import (
     CustomAgentState,
     ChatRequest,
@@ -75,49 +70,7 @@ def get_agent(request: Request):
         raise HTTPException(status_code=500, detail="Agent not initialized")
     return request.app.state.rag_agent
 
-
-@app.post("/chat/audio", response_model=ChatResponse)
-async def invoke_audio_agent(
-    request: ChatRequest,
-    background_tasks: BackgroundTasks,
-    agent=Depends(get_agent),
-    db: AsyncSession = Depends(get_db),
-):
-    try:
-        model_response = await agent.ainvoke(
-            {
-                "messages": [{"role": "user", "content": request.question}],
-                "user_id": str(request.user_id),
-            },
-            {
-                "configurable": {"thread_id": str(request.user_id)}
-            },  # Только 1 thread на пользователя
-        )
-        messages = model_response.get("messages", [])
-
-        if not messages:
-            raise ValueError("No messages returned from agent")
-
-        response_text = model_response["messages"][-1].content
-
-        # Update chat logs
-        background_tasks.add_task(
-            log_interaction,
-            db,
-            request.user_id,
-            UserRequestType.text,
-            request.question,
-            response_text,
-        )
-
-        return ChatResponse(user_id=request.user_id, response=response_text)
-
-    except Exception as e:
-        logger.error(f"Error processing request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/chat/text")
+@app.post("/chat/text", response_model=ChatResponse)
 async def invoke_text_agent(
     background_tasks: BackgroundTasks,
     user_id: str = Form(...),
@@ -128,6 +81,8 @@ async def invoke_text_agent(
 ):
     try:
         if question and image:
+            # IMPORTANT: Чтобы сократить количество токенов, желательно не сохранять base64 в истории.
+            # IMPORTANT: Вместо этого добавить агента, описывающего фото, и сохранять только его ответ
             logger.info(f"Processing question '{question}' and image {image.filename}")
             content = await image.read()
             image_base64 = encode_image(content)
@@ -151,6 +106,8 @@ async def invoke_text_agent(
             request_type = UserRequestType.text_image
 
         elif image:
+            # IMPORTANT: Чтобы сократить количество токенов, желательно не сохранять base64 в истории.
+            # IMPORTANT: Вместо этого добавить агента, описывающего фото, и сохранять только его ответ
             logger.info(f"Processing image {image.filename} without question")
             content = await image.read()
             image_base64 = encode_image(content)
@@ -191,7 +148,12 @@ async def invoke_text_agent(
 
         # Update chat logs
         background_tasks.add_task(
-            log_interaction, db, user_id, request_type, question, response_text
+            log_interaction,
+            db,
+            user_id,
+            question,
+            response_text,
+            request_type,
         )
 
         return ChatResponse(user_id=user_id, response=response_text)

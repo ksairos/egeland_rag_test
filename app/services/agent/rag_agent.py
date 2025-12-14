@@ -1,3 +1,5 @@
+import logging
+
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_qdrant import QdrantVectorStore, FastEmbedSparse, RetrievalMode
@@ -6,6 +8,7 @@ from langchain.agents.middleware import before_model
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langchain_core.messages import RemoveMessage
 from langgraph.runtime import Runtime
+from langsmith import traceable
 from qdrant_client import QdrantClient
 from typing import Any
 
@@ -65,13 +68,18 @@ def trim_messages(
 ) -> dict[str, Any] | None:
     messages = state["messages"]
 
-    if len(messages) <= num_to_keep:
-        return None
+    try:
+        if len(messages) <= num_to_keep:
+            return None
 
-    first_msg = messages[0]
-    while num_to_keep < len(messages) and messages[-num_to_keep].type == "tool":
-        num_to_keep += 1
+        first_msg = messages[0]
+        while num_to_keep < len(messages) and messages[-num_to_keep].type == "tool":
+            num_to_keep += 1
 
-    recent_messages = [first_msg] + messages[-num_to_keep - 1 :]
+        recent_messages = [first_msg] + messages[-num_to_keep - 1 :]
 
-    return {"messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES), *recent_messages]}
+        return {"messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES), *recent_messages]}
+
+    except Exception as e:
+        logging.error(f"Error truncating messages: {e}")
+        return {"messages": messages}
