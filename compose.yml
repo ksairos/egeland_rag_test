@@ -26,6 +26,7 @@ services:
 
   app:
     build: .
+    image: rag-bot:latest
     ports:
       - "8000:8000"
     networks:
@@ -35,6 +36,27 @@ services:
       - postgres
     env_file:
       - .env
+    command:
+      - /app/.venv/bin/uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+
+  bot:
+    build: .
+    image: rag-bot:latest
+    networks:
+      - app-network
+    depends_on:
+      - app
+    env_file:
+      - .env
+    command:
+      - /app/.venv/bin/python3
+      - -m
+      - bot.bot
 
 volumes:
   postgres_data:
