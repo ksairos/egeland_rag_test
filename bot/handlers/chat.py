@@ -3,6 +3,7 @@ import os
 
 import httpx
 from aiogram import Router, F, types
+from chatgpt_md_converter import telegram_format
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,10 +25,12 @@ async def invoke_text(message: types.Message):
             response = await client.post(FASTAPI_ENDPOINT, data=data, timeout=60.0)
             if response.status_code == 200:
                 server_resp = response.json()
-                await message.reply(f"{server_resp.get('response')}")
+                await message.reply(telegram_format(f"{server_resp.get('response')}"))
             else:
+                logging.error(f"Server response: {response.json()}")
                 await message.reply(
-                    f"❌ Произошла ошибка, попробуйте позже: {response.status_code}"
+                    f"❌ Произошла ошибка, попробуйте позже"
                 )
     except Exception as e:
-        await message.reply(f"Ошибка подключения, попробуйте позже: {str(e)}")
+        logging.error(f"Exception: {str(e)}")
+        await message.reply(f"Ошибка подключения, попробуйте позже")

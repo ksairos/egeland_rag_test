@@ -63,7 +63,9 @@ system_prompt = """
 
 @before_model
 def trim_messages(
-    state: AgentState, runtime: Runtime, num_to_keep: int = 10
+    state: AgentState,
+    runtime: Runtime,
+    num_to_keep: int = 3,  # TODO: Change to 10
 ) -> dict[str, Any] | None:
     messages = state["messages"]
 
@@ -82,3 +84,7 @@ def trim_messages(
     except Exception as e:
         logging.error(f"Error truncating messages: {e}")
         return {"messages": messages}
+
+
+def delete_all_messages(state):
+    return {"messages": [RemoveMessage(id=REMOVE_ALL_MESSAGES)]}

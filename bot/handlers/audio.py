@@ -1,9 +1,7 @@
-import logging
 import os
 
 from dotenv import load_dotenv
-import httpx
-from aiogram import Router, F, types
+from aiogram import Router
 
 load_dotenv()
 

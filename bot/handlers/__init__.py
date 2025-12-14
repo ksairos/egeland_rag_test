@@ -3,10 +3,12 @@
 from .chat import chat_router
 from .image import image_router
 from .audio import audio_router
+from .user import user_router
 
 routers_list = [
     image_router,
     audio_router,
+    user_router,
     chat_router,  # всегда в конце
 ]
 

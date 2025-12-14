@@ -12,7 +12,9 @@ from fastapi import (
     Form,
 )
 from langchain.agents import create_agent
+from langchain_core.messages import RemoveMessage, SystemMessage, AIMessage
 from langgraph.checkpoint.postgres import PostgresSaver
+from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -40,7 +42,7 @@ async def lifespan(app: FastAPI):
     with PostgresSaver.from_conn_string(settings.POSTGRES_DB_URL) as checkpointer:
         checkpointer.setup()
 
-        rag_agent = create_agent(
+        rag_agent: CompiledStateGraph = create_agent(
             model=model,
             tools=[retrieve_docs],
             state_schema=CustomAgentState,
@@ -64,7 +66,7 @@ async def health_check():
 
 
 # DI для получения агента
-def get_agent(request: Request):
+def get_agent(request: Request) -> CompiledStateGraph:
     if not hasattr(request.app.state, "rag_agent"):
         raise HTTPException(status_code=500, detail="Agent not initialized")
     return request.app.state.rag_agent
@@ -164,5 +166,22 @@ async def invoke_text_agent(
 
 
 @app.post("/delete_history")
-async def delete_history(user_id: str):
-    pass
+async def delete_history(user_id: str = Form(...), agent: CompiledStateGraph = Depends(get_agent)):
+    try:
+        config = {"configurable": {"thread_id": str(user_id)}}
+        state = agent.get_state(config)
+
+        delete_instructions = [
+            RemoveMessage(id=msg.id) for msg in state.values.get("messages", [])
+        ]
+        restore_system_prompt = AIMessage(content=system_prompt)
+
+        agent.update_state(
+            config,
+            {"messages": delete_instructions + [restore_system_prompt]},
+        )
+
+        return {"detail": "Successfully cleared chat history"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
