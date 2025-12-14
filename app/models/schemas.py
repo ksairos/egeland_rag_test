@@ -20,6 +20,10 @@ class ChatResponse(BaseModel):
 
 
 class UserRequestType(str, Enum):
-    textual = "textual"
-    audio = "audio"
+    text = "text"
+
+    text_image = "text_image"
     image = "image"
+
+    audio_image = "audio_image"
+    audio = "audio"
