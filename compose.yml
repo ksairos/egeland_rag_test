@@ -10,6 +10,10 @@ services:
     restart: always
     networks:
       - app-network
+    command:
+      - /app/.venv/bin/python3
+      - -m
+      - data_pipeline.offline_vector_ingestion
 
   postgres:
     image: postgres:15-alpine

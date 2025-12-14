@@ -18,10 +18,6 @@ client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
 
-if not client.collection_exists(settings.QDRANT_COLLECTION_NAME):
-    logging.warning(f"Collection {settings.QDRANT_COLLECTION_NAME} does not exist. Creating...")
-    create_qdrant_collection()
-
 VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparce"
 
