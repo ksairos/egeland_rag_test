@@ -12,10 +12,14 @@ from qdrant_client import QdrantClient
 from typing import Any
 
 from app.core.config import settings
+from data_pipeline.offline_vector_ingestion import create_qdrant_collection
 
 client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
+
+if not client.collection_exists(settings.QDRANT_COLLECTION_NAME):
+    create_qdrant_collection()
 
 VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparce"

@@ -25,45 +25,47 @@ SPARSE_VECTOR_NAME = "sparce"
 CHUNK_SIZE = 1024
 CHUNK_OVERLAP = 200
 
-client = QdrantClient(host=settings.QDRANT_HOST_OFFLINE, port=settings.QDRANT_PORT)
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
 
-logger.info("Creating data collection")
+def create_qdrant_collection():
+    client = QdrantClient(host=settings.QDRANT_HOST_OFFLINE, port=settings.QDRANT_PORT)
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
 
-if client.collection_exists(settings.QDRANT_COLLECTION_NAME):
-    client.delete_collection(settings.QDRANT_COLLECTION_NAME)
+    logger.info("Creating data collection")
 
-client.create_collection(
-    collection_name=settings.QDRANT_COLLECTION_NAME,
-    vectors_config={VECTOR_NAME: VectorParams(size=1536, distance=Distance.COSINE)},
-    sparse_vectors_config={
-        SPARSE_VECTOR_NAME: SparseVectorParams(
-            modifier=Modifier.IDF, index=SparseIndexParams(on_disk=False)
-        )
-    },
-)
+    if client.collection_exists(settings.QDRANT_COLLECTION_NAME):
+        client.delete_collection(settings.QDRANT_COLLECTION_NAME)
 
-logger.info("Creating vector store")
-vector_store = QdrantVectorStore(
-    client=client,
-    collection_name=settings.QDRANT_COLLECTION_NAME,
-    embedding=embeddings,
-    sparse_embedding=sparse_embeddings,
-    retrieval_mode=RetrievalMode.HYBRID,
-    vector_name=VECTOR_NAME,
-    sparse_vector_name=SPARSE_VECTOR_NAME,
-)
+    client.create_collection(
+        collection_name=settings.QDRANT_COLLECTION_NAME,
+        vectors_config={VECTOR_NAME: VectorParams(size=1536, distance=Distance.COSINE)},
+        sparse_vectors_config={
+            SPARSE_VECTOR_NAME: SparseVectorParams(
+                modifier=Modifier.IDF, index=SparseIndexParams(on_disk=False)
+            )
+        },
+    )
 
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=CHUNK_SIZE,
-    chunk_overlap=CHUNK_OVERLAP,
-)
+    logger.info("Creating vector store")
+    vector_store = QdrantVectorStore(
+        client=client,
+        collection_name=settings.QDRANT_COLLECTION_NAME,
+        embedding=embeddings,
+        sparse_embedding=sparse_embeddings,
+        retrieval_mode=RetrievalMode.HYBRID,
+        vector_name=VECTOR_NAME,
+        sparse_vector_name=SPARSE_VECTOR_NAME,
+    )
 
-logger.info("Loading and splitting lesson data")
-docs = UnstructuredMarkdownLoader("./data_pipeline/data/lessons_clean.md").load()
-splits = text_splitter.split_documents(docs)
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
+    )
 
-logger.info("Upserting data points")
-uuids = [str(uuid4()) for _ in range(len(splits))]
-vector_store.add_documents(splits)
+    logger.info("Loading and splitting lesson data")
+    docs = UnstructuredMarkdownLoader("./data_pipeline/data/lessons_clean.md").load()
+    splits = text_splitter.split_documents(docs)
+
+    logger.info("Upserting data points")
+    uuids = [str(uuid4()) for _ in range(len(splits))]
+    vector_store.add_documents(splits, uuids=uuids)
