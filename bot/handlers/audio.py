@@ -16,7 +16,7 @@ API_SECRET_KEY = os.environ.get("API_SECRET_KEY")
 
 @audio_router.message(F.voice)
 async def invoke_audio(message: types.Message, bot: Bot):
-    await message.reply("Пожалуйста, подождите...")
+    waiting_message = await message.reply("Секунду...")
 
     audio = message.voice.file_id
     title = message.voice.file_unique_id
@@ -38,7 +38,9 @@ async def invoke_audio(message: types.Message, bot: Bot):
         )
         if response.status_code == 200:
             server_resp = response.json()
-            await message.reply(telegram_format(f"{server_resp.get('response')}"))
+            await waiting_message.edit_text(
+                telegram_format(f"{server_resp.get('response')}")
+            )
         else:
             logging.error(f"Server response: {response.json()}")
-            await message.reply("❌ Произошла ошибка, попробуйте позже")
+            await waiting_message.edit_text("❌ Произошла ошибка, попробуйте позже")

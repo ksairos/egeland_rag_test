@@ -21,6 +21,7 @@ async def invoke_text(message: types.Message):
     try:
         async with httpx.AsyncClient() as client:
             logging.info("Sending TEXT request to server...")
+            waiting_message = await message.reply("Секунду...")
 
             data = {"user_id": str(message.from_user.id), "question": message.text}
             headers = {"access_token": API_SECRET_KEY}
@@ -29,10 +30,13 @@ async def invoke_text(message: types.Message):
             )
             if response.status_code == 200:
                 server_resp = response.json()
-                await message.reply(telegram_format(f"{server_resp.get('response')}"))
+                await waiting_message.edit_text(
+                    telegram_format(f"{server_resp.get('response')}")
+                )
             else:
                 logging.error(f"Server response: {response.json()}")
-                await message.reply("❌ Произошла ошибка, попробуйте позже")
+                await waiting_message.edit_text("❌ Произошла ошибка, попробуйте позже")
+
     except Exception as e:
         logging.error(f"Exception: {str(e)}")
-        await message.reply("Ошибка подключения, попробуйте позже")
+        await waiting_message.edit_text("Ошибка подключения, попробуйте позже")

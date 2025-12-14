@@ -16,7 +16,7 @@ API_SECRET_KEY = os.environ.get("API_SECRET_KEY")
 
 @image_router.message(F.photo)
 async def invoke_image(message: types.Message, bot: Bot):
-    await message.reply("Пожалуйста, подождите...")
+    waiting_message = await message.reply("Секунду...")
 
     photo = message.photo[-1].file_id
     title = message.photo[-1].file_unique_id
@@ -43,10 +43,12 @@ async def invoke_image(message: types.Message, bot: Bot):
             logging.info(f"Server response: {response.json()}")
             if response.status_code == 200:
                 server_resp = response.json()
-                await message.reply(telegram_format(f"{server_resp.get('response')}"))
+                await waiting_message.edit_text(
+                    telegram_format(f"{server_resp.get('response')}")
+                )
             else:
                 logging.error(f"Server error: {response.json()}")
-                await message.reply("❌ Произошла ошибка, попробуйте позже")
+                await waiting_message.edit_text("❌ Произошла ошибка, попробуйте позже")
         except Exception as e:
             logging.error(f"Server Exception: {str(e)}")
-            await message.reply("Ошибка подключения, попробуйте позже")
+            await waiting_message.edit_text("Ошибка подключения, попробуйте позже")
