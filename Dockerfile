@@ -14,6 +14,8 @@ COPY pyproject.toml uv.lock ./
 COPY app ./app
 COPY bot ./bot
 COPY data_pipeline ./data_pipeline
+COPY migrations ./migrations
+COPY alembic.ini ./alembic.ini
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
