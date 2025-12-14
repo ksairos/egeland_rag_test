@@ -23,7 +23,10 @@ async def invoke_text(message: types.Message):
             logging.info("Sending TEXT request to server...")
 
             data = {"user_id": str(message.from_user.id), "question": message.text}
-            response = await client.post(FASTAPI_ENDPOINT, data=data, timeout=60.0)
+            headers = {"access_token": API_SECRET_KEY}
+            response = await client.post(
+                FASTAPI_ENDPOINT, data=data, timeout=60.0, headers=headers
+            )
             if response.status_code == 200:
                 server_resp = response.json()
                 await message.reply(telegram_format(f"{server_resp.get('response')}"))
