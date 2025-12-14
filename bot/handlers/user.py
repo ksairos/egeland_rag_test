@@ -2,7 +2,7 @@ import logging
 import os
 
 import httpx
-from aiogram import Router, F, types
+from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from chatgpt_md_converter import telegram_format

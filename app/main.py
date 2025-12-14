@@ -12,7 +12,7 @@ from fastapi import (
     Form,
 )
 from langchain.agents import create_agent
-from langchain_core.messages import RemoveMessage, SystemMessage, AIMessage
+from langchain_core.messages import RemoveMessage, AIMessage
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -180,7 +180,9 @@ async def invoke_audio_agent(
         if audio and image:
             # IMPORTANT: Чтобы сократить количество токенов, желательно не сохранять base64 в истории.
             # IMPORTANT: Вместо этого добавить агента, описывающего фото, и сохранять только его ответ
-            logger.info(f"Processing audio '{audio.filename}' and image {image.filename}")
+            logger.info(
+                f"Processing audio '{audio.filename}' and image {image.filename}"
+            )
 
             content = await image.read()
             image_base64 = encode_image(content)
@@ -264,8 +266,11 @@ async def invoke_audio_agent(
         logger.error(f"Error processing request: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/delete_history")
-async def delete_history(user_id: str = Form(...), agent: CompiledStateGraph = Depends(get_agent)):
+async def delete_history(
+    user_id: str = Form(...), agent: CompiledStateGraph = Depends(get_agent)
+):
     try:
         config = {"configurable": {"thread_id": str(user_id)}}
         state = agent.get_state(config)

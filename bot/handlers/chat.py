@@ -28,9 +28,7 @@ async def invoke_text(message: types.Message):
                 await message.reply(telegram_format(f"{server_resp.get('response')}"))
             else:
                 logging.error(f"Server response: {response.json()}")
-                await message.reply(
-                    f"❌ Произошла ошибка, попробуйте позже"
-                )
+                await message.reply("❌ Произошла ошибка, попробуйте позже")
     except Exception as e:
         logging.error(f"Exception: {str(e)}")
-        await message.reply(f"Ошибка подключения, попробуйте позже")
+        await message.reply("Ошибка подключения, попробуйте позже")

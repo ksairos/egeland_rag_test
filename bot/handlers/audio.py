@@ -12,6 +12,7 @@ load_dotenv()
 audio_router = Router()
 FASTAPI_ENDPOINT = os.environ.get("FASTAPI_URL") + "chat/audio"
 
+
 @audio_router.message(F.voice)
 async def invoke_audio(message: types.Message, bot: Bot):
     await message.reply("Пожалуйста, подождите...")
@@ -30,13 +31,12 @@ async def invoke_audio(message: types.Message, bot: Bot):
 
     async with httpx.AsyncClient() as client:
         logging.info("Sending AUDIO request to server...")
-        response = await client.post(FASTAPI_ENDPOINT, files=files, data=data, timeout=60.0)
+        response = await client.post(
+            FASTAPI_ENDPOINT, files=files, data=data, timeout=60.0
+        )
         if response.status_code == 200:
             server_resp = response.json()
             await message.reply(telegram_format(f"{server_resp.get('response')}"))
         else:
             logging.error(f"Server response: {response.json()}")
-            await message.reply(
-                f"❌ Произошла ошибка, попробуйте позже"
-            )
-
+            await message.reply("❌ Произошла ошибка, попробуйте позже")
