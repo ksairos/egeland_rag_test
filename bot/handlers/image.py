@@ -15,6 +15,8 @@ FASTAPI_ENDPOINT = os.environ.get("FASTAPI_URL") + "chat/text"
 
 @image_router.message(F.photo)
 async def invoke_image(message: types.Message, bot: Bot):
+    await message.reply("Пожалуйста, подождите...")
+
     photo = message.photo[-1].file_id
     title = message.photo[-1].file_unique_id
     file_buffer = io.BytesIO()
