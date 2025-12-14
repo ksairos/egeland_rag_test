@@ -8,7 +8,6 @@ from langchain.agents.middleware import before_model
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langchain_core.messages import RemoveMessage
 from langgraph.runtime import Runtime
-from langsmith import traceable
 from qdrant_client import QdrantClient
 from typing import Any
 

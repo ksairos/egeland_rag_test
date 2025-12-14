@@ -11,7 +11,7 @@ from bot.handlers import routers_list
 
 
 async def on_startup(bot: Bot):
-    from aiogram.types import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
+    from aiogram.types import BotCommand, BotCommandScopeDefault
 
     commands = [
         BotCommand(command="start", description="Запустить бота"),

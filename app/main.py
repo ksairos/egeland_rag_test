@@ -19,7 +19,6 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.schemas import (
     CustomAgentState,
-    ChatRequest,
     ChatResponse,
     UserRequestType,
 )
@@ -69,6 +68,7 @@ def get_agent(request: Request):
     if not hasattr(request.app.state, "rag_agent"):
         raise HTTPException(status_code=500, detail="Agent not initialized")
     return request.app.state.rag_agent
+
 
 @app.post("/chat/text", response_model=ChatResponse)
 async def invoke_text_agent(
