@@ -11,6 +11,7 @@ load_dotenv()
 
 image_router = Router()
 FASTAPI_ENDPOINT = os.environ.get("FASTAPI_URL") + "chat/text"
+API_SECRET_KEY = os.environ.get("API_SECRET_KEY")
 
 
 @image_router.message(F.photo)
@@ -34,9 +35,9 @@ async def invoke_image(message: types.Message, bot: Bot):
     async with httpx.AsyncClient() as client:
         try:
             logging.info("Sending PHOTO request to server...")
-
+            headers = {"access_token": API_SECRET_KEY}
             response = await client.post(
-                FASTAPI_ENDPOINT, files=files, data=data, timeout=60.0
+                FASTAPI_ENDPOINT, files=files, data=data, timeout=60.0, headers=headers
             )
 
             logging.info(f"Server response: {response.json()}")

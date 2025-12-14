@@ -15,7 +15,7 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     env_file:
-      - .env
+      - app/.env
     ports:
       - "5432:5432"
     volumes:
@@ -35,7 +35,7 @@ services:
       - qdrant
       - postgres
     env_file:
-      - .env
+      - app/.env
     command:
       - /app/.venv/bin/uvicorn
       - app.main:app
@@ -52,7 +52,7 @@ services:
     depends_on:
       - app
     env_file:
-      - .env
+      - bot/.env
     command:
       - /app/.venv/bin/python3
       - -m

@@ -1,7 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status, Security, Depends
+from fastapi.security import APIKeyHeader
 from langchain.agents import create_agent
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.graph.state import CompiledStateGraph
@@ -18,6 +19,17 @@ from app.routers import chat, health
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+api_key_header = APIKeyHeader(name="access_token", auto_error=False)
+
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    if api_key == settings.API_SECRET_KEY:
+        return api_key
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or missing API Key",
+    )
 
 
 @asynccontextmanager
@@ -42,4 +54,4 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Тестовое", lifespan=lifespan)
 
 app.include_router(health.router)
-app.include_router(chat.router)
+app.include_router(chat.router, dependencies=[Depends(verify_api_key)])

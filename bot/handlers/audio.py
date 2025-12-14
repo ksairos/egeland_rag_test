@@ -11,6 +11,7 @@ load_dotenv()
 
 audio_router = Router()
 FASTAPI_ENDPOINT = os.environ.get("FASTAPI_URL") + "chat/audio"
+API_SECRET_KEY = os.environ.get("API_SECRET_KEY")
 
 
 @audio_router.message(F.voice)
@@ -31,8 +32,9 @@ async def invoke_audio(message: types.Message, bot: Bot):
 
     async with httpx.AsyncClient() as client:
         logging.info("Sending AUDIO request to server...")
+        headers = {"access_token": API_SECRET_KEY}
         response = await client.post(
-            FASTAPI_ENDPOINT, files=files, data=data, timeout=60.0
+            FASTAPI_ENDPOINT, files=files, data=data, timeout=60.0, headers=headers
         )
         if response.status_code == 200:
             server_resp = response.json()

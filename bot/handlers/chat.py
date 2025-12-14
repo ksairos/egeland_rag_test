@@ -10,6 +10,7 @@ load_dotenv()
 
 chat_router = Router()
 FASTAPI_ENDPOINT = os.environ.get("FASTAPI_URL") + "chat/text"
+API_SECRET_KEY = os.environ.get("API_SECRET_KEY")
 
 
 @chat_router.message(F.text)

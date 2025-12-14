@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 user_router = Router()
-FASTAPI_ENDPOINT = os.environ.get("FASTAPI_URL") + "delete_history"
+FASTAPI_ENDPOINT = os.environ.get("FASTAPI_URL") + "chat/delete_history"
+API_SECRET_KEY = os.environ.get("API_SECRET_KEY")
 
 
 @user_router.message(CommandStart())
@@ -26,7 +27,10 @@ async def clear_history(message: Message):
     async with httpx.AsyncClient() as client:
         logging.info("Removing chat history...")
         data = {"user_id": str(message.from_user.id)}
-        response = await client.post(FASTAPI_ENDPOINT, data=data, timeout=60.0)
+        headers = {"access_token": API_SECRET_KEY}
+        response = await client.post(
+            FASTAPI_ENDPOINT, data=data, timeout=60.0, headers=headers
+        )
         if response.status_code == 200:
             logging.info("Successfully removed chat history.")
             await message.answer("История очищена")
