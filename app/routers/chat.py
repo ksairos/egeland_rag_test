@@ -9,7 +9,7 @@ from fastapi import (
     File,
     Form,
 )
-from langchain_core.messages import RemoveMessage, AIMessage
+
 from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +20,7 @@ from app.models.schemas import (
 )
 from app.services.agent.audio import transcribe_audio
 from app.services.agent.image import encode_image
-from app.services.agent.rag_agent import system_prompt
+from app.services.agent.tools.messages import delete_all_messages
 from app.services.db_service import log_interaction
 
 logger = logging.getLogger(__name__)
@@ -234,19 +234,7 @@ async def delete_history(
     user_id: str = Form(...), agent: CompiledStateGraph = Depends(get_agent)
 ):
     try:
-        config = {"configurable": {"thread_id": str(user_id)}}
-        state = agent.get_state(config)
-
-        delete_instructions = [
-            RemoveMessage(id=msg.id) for msg in state.values.get("messages", [])
-        ]
-        restore_system_prompt = AIMessage(content=system_prompt)
-
-        agent.update_state(
-            config,
-            {"messages": delete_instructions + [restore_system_prompt]},
-        )
-
+        delete_all_messages(user_id, agent)
         return {"detail": "Successfully cleared chat history"}
 
     except Exception as e:

@@ -19,11 +19,17 @@ class Settings(BaseSettings):
     QDRANT_PORT: int
     QDRANT_COLLECTION_NAME: str
 
+    VECTOR_NAME: str = "dense"
+    SPARSE_VECTOR_NAME: str = "sparce"
+
     LANGSMITH_API_KEY: str
     LANGSMITH_TRACING: bool = False
 
     VECTOR_STORE_PATH: str = "qdrant_data"
     # SOURCE_DOCS_PATH: str = "source_docs"
+
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    SPARSE_MODEL: str = "Qdrant/bm25"
 
     model_config = SettingsConfigDict(
         env_file="app/.env", env_file_encoding="utf-8", extra="ignore"

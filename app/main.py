@@ -3,18 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, status, Security, Depends
 from fastapi.security import APIKeyHeader
-from langchain.agents import create_agent
 from langgraph.checkpoint.postgres import PostgresSaver
-from langgraph.graph.state import CompiledStateGraph
 
 from app.core.config import settings
-from app.models.schemas import CustomAgentState
-from app.services.agent.rag_agent import (
-    model,
-    retrieve_docs,
-    system_prompt,
-    trim_messages,
-)
+from app.services.agent.rag_agent import build_rag_agent
 from app.routers import chat, health
 
 logging.basicConfig(level=logging.INFO)
@@ -36,18 +28,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 async def lifespan(app: FastAPI):
     with PostgresSaver.from_conn_string(settings.POSTGRES_DB_URL) as checkpointer:
         checkpointer.setup()
-
-        rag_agent: CompiledStateGraph = create_agent(
-            model=model,
-            tools=[retrieve_docs],
-            state_schema=CustomAgentState,
-            system_prompt=system_prompt,
-            checkpointer=checkpointer,
-            middleware=[trim_messages],
-        )
-
-        app.state.rag_agent = rag_agent
-
+        app.state.rag_agent = build_rag_agent(checkpointer)
         yield
 
 

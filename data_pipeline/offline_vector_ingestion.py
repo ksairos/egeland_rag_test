@@ -27,6 +27,7 @@ CHUNK_OVERLAP = 200
 
 client = QdrantClient(host=settings.QDRANT_HOST_OFFLINE, port=settings.QDRANT_PORT)
 
+
 def create_qdrant_collection():
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
@@ -70,7 +71,10 @@ def create_qdrant_collection():
     uuids = [str(uuid4()) for _ in range(len(splits))]
     vector_store.add_documents(splits, uuids=uuids)
 
+
 if __name__ == "__main__":
     if not client.collection_exists(settings.QDRANT_COLLECTION_NAME):
-        logging.warning(f"Collection {settings.QDRANT_COLLECTION_NAME} does not exist. Creating...")
+        logging.warning(
+            f"Collection {settings.QDRANT_COLLECTION_NAME} does not exist. Creating..."
+        )
         create_qdrant_collection()
